@@ -1,0 +1,57 @@
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import java.io.Serializable;
+import java.text.NumberFormat;
+import java.util.Locale;
+
+public class TaxCalculator {
+    private static Long calculateTax(Long salary) {
+        long tax;
+
+        if (salary <= 24000000) {
+            tax = 0L;
+        } else if (salary <= 30000000) {
+            tax = (long) ((salary - 24000000) * 0.10);
+        } else if (salary <= 38000000) {
+            tax = (long) ((30000000 - 24000000) * 0.10 + (salary - 30000000) * 0.15);
+        } else if (salary <= 50000000) {
+            tax = (long) ((30000000 - 24000000) * 0.10 + (38000000 - 30000000) * 0.15 + (salary - 38000000) * 0.20);
+        } else if (salary <= 66700000) {
+            tax = (long) ((30000000 - 24000000) * 0.10 + (38000000 - 30000000) * 0.15 + (50000000 - 38000000) * 0.20 + (salary - 50000000) * 0.25);
+        } else {
+            tax = (long) ((30000000 - 24000000) * 0.10 + (38000000 - 30000000) * 0.15 + (50000000 - 38000000) * 0.20 + (66700000 - 50000000) * 0.25 + (salary - 66700000) * 0.30);
+        }
+
+        return tax;
+    }
+
+    private static String formatNumber(long number) {
+        NumberFormat formatter = NumberFormat.getInstance(Locale.US);
+        return formatter.format(number);
+    }
+
+    public static TAXDto calc(Long salary) {
+        var insurance = (long) (salary * 0.07);
+        var tax = calculateTax(salary - insurance);
+
+        return TAXDto.builder()
+                .salary(formatNumber(salary))
+                .insurance(formatNumber(insurance))
+                .tax(formatNumber(tax))
+                .pure(formatNumber(salary - tax - insurance))
+                .build();
+    }
+
+    @Builder
+    @Setter
+    @Getter
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    public static class TAXDto implements Serializable {
+        private String salary;
+        private String tax;
+        private String insurance;
+        private String pure;
+    }
+}
